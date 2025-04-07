@@ -26,10 +26,14 @@ namespace AvaloniaApplication1.ViewModels
             {
                 _camera = new Camera();
                 _camera.Open();
+               
                 _camera.StreamGrabber.Start();
+                //트리거모드 off
+                _camera.Parameters[PLCamera.TriggerMode].SetValue("Off");
+                _camera.Parameters[PLCamera.AcquisitionMode].SetValue("Continuous");
 
                 _cts = new CancellationTokenSource();
-                await Task.Run(() => GrabLoop(_cts.Token));  
+                await Task.Run(() => GrabLoop(_cts.Token));  //무한 루프 함수를 백그라운드 스레드에서 실행
             }
             catch (Exception ex)
             {
@@ -86,13 +90,17 @@ namespace AvaloniaApplication1.ViewModels
                             CameraImage = wb;
                         });
                     }
+                    else
+                    {
+                        Console.WriteLine("Grab failed or timed out");
+                    }
                 }
                 catch (Exception ex)
                 {
                     Console.WriteLine("GrabLoop Error: " + ex.Message);
                 }
 
-                Thread.Sleep(1);  // 프레임 조절
+                Thread.Sleep(10);  // 프레임 조절
             }
         }
     }
