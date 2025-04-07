@@ -5,6 +5,8 @@
     <Nullable>enable</Nullable>
     <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
     <ApplicationManifest>app.manifest</ApplicationManifest>
+    <Platforms>AnyCPU;x64</Platforms>
+    <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <ItemGroup>
@@ -35,5 +37,11 @@
     <PackageReference Include="Avalonia.ReactiveUI" Version="11.2.1" />
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
     <PackageReference Include="System.Drawing.Common" Version="6.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Basler.Pylon">
+      <HintPath>..\..\..\..\..\..\Program Files\Basler\pylon 7\Development\Assemblies\Basler.Pylon\x64\Basler.Pylon.dll</HintPath>
+    </Reference>
   </ItemGroup>
 </Project>
