@@ -28,7 +28,7 @@ namespace AvaloniaApplication1.ViewModels
                 _camera.Open();
                
                 _camera.StreamGrabber.Start();
-                //트리거모드 off
+                //파라미터설정
                 _camera.Parameters[PLCamera.TriggerMode].SetValue("Off");
                 _camera.Parameters[PLCamera.AcquisitionMode].SetValue("Continuous");
 
@@ -56,6 +56,25 @@ namespace AvaloniaApplication1.ViewModels
             }
         }
 
+        [RelayCommand]
+        public void SaveImage()
+        {
+            if (CameraImage == null)
+                return;
+
+            try
+            {
+
+                var path = @"C:\Users\unieye\source\repos\AvaloniaApplication1\AvaloniaApplication1\Assets\Captured.png";
+                using var fs = new FileStream(path, FileMode.Create);
+                CameraImage.Save(fs);
+                Console.WriteLine("이미지 저장 성공!");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("이미지 저장 실패: " + ex.Message);
+            }
+        }
         private void GrabLoop(CancellationToken token)
         {
             var converter = new PixelDataConverter { OutputPixelFormat = PixelType.BGRA8packed };
