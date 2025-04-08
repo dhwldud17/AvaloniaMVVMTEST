@@ -1,23 +1,28 @@
-﻿using Avalonia;
-using Avalonia.Media.Imaging;
-using Avalonia.Threading;
-using Basler.Pylon;
-using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
-using System;
+﻿using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
+using Avalonia;
+using Avalonia.Media.Imaging;
+using Avalonia.Threading;
+
+using Basler.Pylon;
+
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+
+//https://learn.microsoft.com/ko-kr/dotnet/csharp/tour-of-csharp/strategy : C#설명서 참고하기 
 namespace AvaloniaApplication1.ViewModels
 {
     public partial class MainWindowViewModel : ObservableObject
-    {          
+    {
         //ObservableObject: MVVM 패턴에서 바인딩 속성에 대해 자동으로 INotifyPropertyChanged 구현
         private Camera? _camera;
         private CancellationTokenSource? _cts; // Grab 루프를 중지시키기 위한 토큰을 제공.
+
         private double _gainValue;
-       
+
         [ObservableProperty] //자동으로 CameraImage라는 public 프로퍼티와 PropertyChanged 알림을 만들어줌
         private Bitmap? cameraImage;
 
@@ -28,20 +33,22 @@ namespace AvaloniaApplication1.ViewModels
             {
                 _camera = new Camera();
                 _camera.Open();
-               
+
                 _camera.StreamGrabber.Start();
+
                 //파라미터설정
                 _camera.Parameters[PLCamera.TriggerMode].SetValue("Off");
                 _camera.Parameters[PLCamera.AcquisitionMode].SetValue("Continuous");
                 _camera.Parameters[PLCamera.GainAuto].SetValue("Off");
                 _cts = new CancellationTokenSource();
+
                 Task.Run(() => GrabLoop(_cts.Token));  //무한 루프 함수를 백그라운드 스레드에서 실행
             }
             catch (Exception ex)
             {
                 Console.WriteLine("StartCamera Error: " + ex.Message);
             }
-             return Task.CompletedTask; // RelayCommand가 Task 반환형이므로 빈 Task 반환
+            return Task.CompletedTask; // RelayCommand가 Task 반환형이므로 빈 Task 반환
         }
 
         [RelayCommand]
@@ -63,11 +70,12 @@ namespace AvaloniaApplication1.ViewModels
         public void SaveImage()
         {
             if (CameraImage == null)
+            {
                 return;
+            }
 
             try
             {
-
                 var path = @"C:\Users\unieye\source\repos\AvaloniaApplication1\AvaloniaApplication1\Assets\Captured.png";
                 using var fs = new FileStream(path, FileMode.Create);
                 CameraImage.Save(fs);
@@ -95,6 +103,7 @@ namespace AvaloniaApplication1.ViewModels
                 }
             }
         }
+
         private void GrabLoop(CancellationToken token)
         {
             var converter = new PixelDataConverter { OutputPixelFormat = PixelType.BGRA8packed };
@@ -103,7 +112,8 @@ namespace AvaloniaApplication1.ViewModels
             {
                 try
                 {
-                    using var grabResult = _camera?.StreamGrabber.RetrieveResult(500, TimeoutHandling.ThrowException);//0.5초 안에 못 받으면 에러
+                    using var grabResult = _camera?.StreamGrabber
+                        .RetrieveResult(500, TimeoutHandling.ThrowException);//0.5초 안에 못 받으면 에러
                     //영상프레임하나 = GrabResult
                     if (grabResult?.GrabSucceeded == true)
                     {

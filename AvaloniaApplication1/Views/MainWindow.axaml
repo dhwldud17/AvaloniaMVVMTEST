@@ -3,9 +3,12 @@
         xmlns:vm="using:AvaloniaApplication1.ViewModels"
         x:Class="AvaloniaApplication1.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
-        Title="Camera Viewer" Width="800" Height="600"
+        Title="Camera Viewer" 
+		Width="800" 
+		Height="600"
 		Background="#f2f2f2">
-
+	
+	<!--xmlns : xml namespace : 선언 시 소문자 첫글자를 사용. 의미 불명확 or 선언된 namespace와 중복되면 Camel case-->
 	<Design.DataContext>
 		<vm:MainWindowViewModel/>
 	</Design.DataContext>
@@ -16,20 +19,45 @@
 		<StackPanel Orientation="Horizontal" 
 					Background="Gray" 
 					DockPanel.Dock="Top" 
-					HorizontalAlignment="Left" Margin="10" Spacing="30">
-			<Button Content="Grab" Command="{Binding StartCameraCommand}" Width="100" />
-			<Button Content="Save Image" Command="{Binding SaveImageCommand}" Width="100"/>
-			<Button Content="Stop" Command="{Binding StopCameraCommand}" Width="100" />
-
+					HorizontalAlignment="Left" 
+					Margin="10" 
+					Spacing="30">
+			
+			<Button Content="Grab" 
+					Command="{Binding StartCameraCommand}" 
+					Width="100" />
+			
+			<Button Content="Save Image" 
+					Command="{Binding SaveImageCommand}" 
+					Width="100" />
+			
+			<Button Content="Stop"
+					Command="{Binding StopCameraCommand}"
+					Width="100" />
+			
 			<!-- Gain 조절 슬라이더 -->
-			<TextBlock Text="Gain:" VerticalAlignment="Center" Foreground="White"/>
-			<Slider Minimum="0" Maximum="100" Value="{Binding GainValue, Mode=TwoWay}" Width="150"/>
-			<TextBlock Text="{Binding GainValue}" VerticalAlignment="Center" Foreground="White"/>
+			<TextBlock Text="Gain:"
+					   VerticalAlignment="Center"
+					   Foreground="White" />
+			
+			<Slider Minimum="0" 
+					Maximum="100"
+					Value="{Binding GainValue, Mode=TwoWay}" 
+					Width="150" />
+			
+			<TextBlock Text="{Binding GainValue}" 
+					   VerticalAlignment="Center" 
+					   Foreground="White" />
 		</StackPanel>
 
 		<!-- 이미지 뷰 -->
-		<Border Margin="10" Background="White" CornerRadius="8" BorderBrush="#ccc" BorderThickness="1">
-			<Image Source="{Binding CameraImage}" Stretch="Uniform" />
+		<Border Margin="10" 
+				Background="White" 
+				CornerRadius="8" 
+				BorderBrush="#ccc"
+				BorderThickness="1">
+			<Image Source="{Binding CameraImage}" 
+				   Stretch="Uniform" />
 		</Border>
 
 	</DockPanel>
