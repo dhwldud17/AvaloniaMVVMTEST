@@ -50,15 +50,49 @@
 					   Foreground="White" />
 		</StackPanel>
 
-		<!-- 이미지 뷰 -->
-		<Border Margin="10" 
-				Background="White" 
-				CornerRadius="8" 
-				BorderBrush="#ccc"
-				BorderThickness="1">
-			<Image Source="{Binding CameraImage}" 
-				   Stretch="Uniform" />
-		</Border>
+		<!-- 카메라 + 저장 이미지 섹션 -->
+		<Grid Margin="10">
+			<Grid.ColumnDefinitions>
+				<ColumnDefinition Width="3*"/>
+				<ColumnDefinition Width="*"/>
+			</Grid.ColumnDefinitions>
 
+			<!-- 카메라 영상 -->
+			<Border Grid.Column="0"
+					Margin="5"
+					Background="White"
+					CornerRadius="8"
+					BorderBrush="#ccc"
+					BorderThickness="1">
+				<Image Source="{Binding CameraImage}"
+					   Stretch="Uniform" />
+			</Border>
+
+			<!-- 저장된 이미지 리스트 -->
+			<ScrollViewer Grid.Column="1"
+						  VerticalScrollBarVisibility="Auto"
+						  Margin="5">
+				<ItemsControl ItemsSource="{Binding SavedImages}">
+					<ItemsControl.ItemsPanel>
+						<ItemsPanelTemplate>
+							<StackPanel Orientation="Vertical"/>
+						</ItemsPanelTemplate>
+					</ItemsControl.ItemsPanel>
+					<ItemsControl.ItemTemplate>
+						<DataTemplate>
+							<Border Margin="5"
+									CornerRadius="4"
+									BorderBrush="#aaa"
+									BorderThickness="1">
+								<Image Source="{Binding}"
+									   Width="120"
+									   Height="90"
+									   Stretch="UniformToFill"/>
+							</Border>
+						</DataTemplate>
+					</ItemsControl.ItemTemplate>
+				</ItemsControl>
+			</ScrollViewer>
+		</Grid>
 	</DockPanel>
 </Window>

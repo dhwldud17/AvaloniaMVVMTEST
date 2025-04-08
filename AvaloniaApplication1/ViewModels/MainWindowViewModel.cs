@@ -2,6 +2,7 @@
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Collections.ObjectModel;
 
 using Avalonia;
 using Avalonia.Media.Imaging;
@@ -26,6 +27,9 @@ namespace AvaloniaApplication1.ViewModels
         [ObservableProperty] //자동으로 CameraImage라는 public 프로퍼티와 PropertyChanged 알림을 만들어줌
         private Bitmap? cameraImage;
 
+        [ObservableProperty]
+        private ObservableCollection<Bitmap> savedImages = new();
+
         [RelayCommand] //이 메서드를 자동으로 커맨드로 만들어줌 → XAML에서 바인딩(UI와 코드 자동연결)가능하게.
         public Task StartCameraAsync()
         {
@@ -33,14 +37,19 @@ namespace AvaloniaApplication1.ViewModels
             {
                 _camera = new Camera();
                 _camera.Open();
-
-                _camera.StreamGrabber.Start();
-
+    
                 //파라미터설정
+              //  _camera.Parameters[PLCamera.GainAuto].SetValue("Off");
+                //_camera.Parameters[PLCamera.Gain].SetValue(10.0);
+_camera.StreamGrabber.Start(); 
                 _camera.Parameters[PLCamera.TriggerMode].SetValue("Off");
                 _camera.Parameters[PLCamera.AcquisitionMode].SetValue("Continuous");
-                _camera.Parameters[PLCamera.GainAuto].SetValue("Off");
+      
+               
+                
                 _cts = new CancellationTokenSource();
+
+                
 
                 Task.Run(() => GrabLoop(_cts.Token));  //무한 루프 함수를 백그라운드 스레드에서 실행
             }
@@ -66,6 +75,8 @@ namespace AvaloniaApplication1.ViewModels
             }
         }
 
+        
+
         [RelayCommand]
         public void SaveImage()
         {
@@ -80,6 +91,15 @@ namespace AvaloniaApplication1.ViewModels
                 using var fs = new FileStream(path, FileMode.Create);
                 CameraImage.Save(fs);
                 Console.WriteLine("이미지 저장 성공!");
+
+                // 저장된 이미지를 리스트에 추가
+                // CameraImage를 복제해서 넣어야 한다. WriteableBitmap은 재사용되므로
+                using var ms = new MemoryStream();
+                CameraImage.Save(ms);
+                ms.Seek(0, SeekOrigin.Begin);
+                var copiedImage = new Bitmap(ms);
+
+                SavedImages.Add(copiedImage);
             }
             catch (Exception ex)
             {
@@ -87,6 +107,7 @@ namespace AvaloniaApplication1.ViewModels
             }
         }
 
+        
 
         //속성 ->값이 변함
         // XAML은 함수 호출은 못 하고 오직 속성(Property) 에만 바인딩할 수 있다.
