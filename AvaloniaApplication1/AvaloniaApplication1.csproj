@@ -15,16 +15,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <AvaloniaResource Remove="Assets\sample.jpg" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <AvaloniaXaml Include="Assets\sample.jpg">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </AvaloniaXaml>
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="Avalonia" Version="11.2.1" />
     <PackageReference Include="Avalonia.Desktop" Version="11.2.1" />
     <PackageReference Include="Avalonia.Themes.Fluent" Version="11.2.1" />

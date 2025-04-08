@@ -13,10 +13,18 @@
 	<DockPanel LastChildFill="True">
 
 		<!-- 상단 버튼 바 -->
-		<StackPanel Orientation="Horizontal" Background="Gray" DockPanel.Dock="Top" HorizontalAlignment="Left" Margin="10" Spacing="30">
+		<StackPanel Orientation="Horizontal" 
+					Background="Gray" 
+					DockPanel.Dock="Top" 
+					HorizontalAlignment="Left" Margin="10" Spacing="30">
 			<Button Content="Grab" Command="{Binding StartCameraCommand}" Width="100" />
-			<Button Content="Save Image" Command="{Binding SaveImageCommand}" Width="100" />
+			<Button Content="Save Image" Command="{Binding SaveImageCommand}" Width="100"/>
 			<Button Content="Stop" Command="{Binding StopCameraCommand}" Width="100" />
+
+			<!-- Gain 조절 슬라이더 -->
+			<TextBlock Text="Gain:" VerticalAlignment="Center" Foreground="White"/>
+			<Slider Minimum="0" Maximum="100" Value="{Binding GainValue, Mode=TwoWay}" Width="150"/>
+			<TextBlock Text="{Binding GainValue}" VerticalAlignment="Center" Foreground="White"/>
 		</StackPanel>
 
 		<!-- 이미지 뷰 -->
