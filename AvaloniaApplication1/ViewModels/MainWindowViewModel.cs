@@ -14,6 +14,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using System.Collections.Generic;
 using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Controls;
 
 //https://learn.microsoft.com/ko-kr/dotnet/csharp/tour-of-csharp/strategy : C#설명서 참고하기 
 namespace AvaloniaApplication1.ViewModels
@@ -60,19 +61,24 @@ namespace AvaloniaApplication1.ViewModels
 
             if (App.Current.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
             {
-                // 여기서 비동기 ShowDialog의 결과를 동기로 기다림
-                var selectedSerialTask = cameraSelectWindow.ShowDialog<string?>(desktop.MainWindow);
-                string? selectedSerial = selectedSerialTask.GetAwaiter().GetResult();  // ✅ await 없이 값 꺼내기
-
-                if (!string.IsNullOrEmpty(selectedSerial))
+                // 팝업 닫힐 때 처리할 이벤트 연결
+                cameraSelectWindow.Closed += (_, _) =>
                 {
-                    SelectedSerialNumber = selectedSerial;
-                    StartCameraAsync();  // 기존 함수 호출
-                }
+                    var selectedSerial = cameraSelectWindow.SelectedSerial;
+
+                    if (!string.IsNullOrEmpty(selectedSerial))
+                    {
+                        SelectedSerialNumber = selectedSerial;
+                        StartCameraAsync();
+                    }
+                };
+
+                cameraSelectWindow.Show(desktop.MainWindow); // 여기 주목!! ShowDialog → Show
             }
 
             return Task.CompletedTask;
         }
+
 
         [RelayCommand]
         private void ToggleStream()
@@ -93,6 +99,7 @@ namespace AvaloniaApplication1.ViewModels
             _isStreaming = !_isStreaming; // 스트리밍 상태 토글
         }
 
+        
 
         [RelayCommand] //이 메서드를 자동으로 커맨드로 만들어줌 → XAML에서 바인딩(UI와 코드 자동연결)가능하게.
         public Task StartCameraAsync()

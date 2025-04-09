@@ -23,6 +23,7 @@
 					Margin="10"
 					Spacing="30">
 
+
 			<Button Content="Open Camera"
 			        Command="{Binding OpenCameraCommand}"
 		           	Width="100" />
