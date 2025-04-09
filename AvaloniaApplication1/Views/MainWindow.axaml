@@ -3,11 +3,11 @@
         xmlns:vm="using:AvaloniaApplication1.ViewModels"
         x:Class="AvaloniaApplication1.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
-        Title="Camera Viewer" 
-		Width="800" 
+        Title="Camera Viewer"
+		Width="800"
 		Height="600"
 		Background="#f2f2f2">
-	
+
 	<!--xmlns : xml namespace : 선언 시 소문자 첫글자를 사용. 의미 불명확 or 선언된 namespace와 중복되면 Camel case-->
 	<Design.DataContext>
 		<vm:MainWindowViewModel/>
@@ -16,37 +16,51 @@
 	<DockPanel LastChildFill="True">
 
 		<!-- 상단 버튼 바 -->
-		<StackPanel Orientation="Horizontal" 
-					Background="Gray" 
-					DockPanel.Dock="Top" 
-					HorizontalAlignment="Left" 
-					Margin="10" 
+		<StackPanel Orientation="Horizontal"
+					Background="Gray"
+					DockPanel.Dock="Top"
+					HorizontalAlignment="Left"
+					Margin="10"
 					Spacing="30">
+
+
+
+			<Button Content="Open Camera"
+			        Command="{Binding StartCameraCommand}"
+		           	Width="100" />
+
+			<ComboBox ItemsSource="{Binding AvailableCameras}" 
+					  SelectedItem="{Binding SelectedSerialNumber}" 
+					  Width="200" />
 			
-			<Button Content="Grab" 
-					Command="{Binding StartCameraCommand}" 
+			<Button Content="{Binding ToggleButtonText}"
+			        Command="{Binding ToggleStreamCommand}"
+		           	Width="100" />
+
+			<Button Content="Save Image"
+					Command="{Binding SaveImageCommand}"
 					Width="100" />
-			
-			<Button Content="Save Image" 
-					Command="{Binding SaveImageCommand}" 
+
+			<Button Content="Load Image"
+					Command="{Binding LoadImageCommand}"
 					Width="100" />
-			
+
 			<Button Content="Stop"
 					Command="{Binding StopCameraCommand}"
 					Width="100" />
-			
+
 			<!-- Gain 조절 슬라이더 -->
 			<TextBlock Text="Gain:"
 					   VerticalAlignment="Center"
 					   Foreground="White" />
-			
-			<Slider Minimum="0" 
+
+			<Slider Minimum="0"
 					Maximum="100"
-					Value="{Binding GainValue, Mode=TwoWay}" 
+					Value="{Binding GainValue, Mode=TwoWay}"
 					Width="150" />
-			
-			<TextBlock Text="{Binding GainValue}" 
-					   VerticalAlignment="Center" 
+
+			<TextBlock Text="{Binding GainValue}"
+					   VerticalAlignment="Center"
 					   Foreground="White" />
 		</StackPanel>
 
