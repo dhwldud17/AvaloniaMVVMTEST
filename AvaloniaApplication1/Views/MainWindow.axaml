@@ -23,15 +23,10 @@
 					Margin="10"
 					Spacing="30">
 
-
-
 			<Button Content="Open Camera"
-			        Command="{Binding StartCameraCommand}"
+			        Command="{Binding OpenCameraCommand}"
 		           	Width="100" />
 
-			<ComboBox ItemsSource="{Binding AvailableCameras}" 
-					  SelectedItem="{Binding SelectedSerialNumber}" 
-					  Width="200" />
 			
 			<Button Content="{Binding ToggleButtonText}"
 			        Command="{Binding ToggleStreamCommand}"

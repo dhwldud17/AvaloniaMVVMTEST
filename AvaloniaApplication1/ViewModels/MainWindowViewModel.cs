@@ -13,6 +13,7 @@ using Basler.Pylon;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using System.Collections.Generic;
+using Avalonia.Controls.ApplicationLifetimes;
 
 //https://learn.microsoft.com/ko-kr/dotnet/csharp/tour-of-csharp/strategy : C#설명서 참고하기 
 namespace AvaloniaApplication1.ViewModels
@@ -50,6 +51,27 @@ namespace AvaloniaApplication1.ViewModels
         {
             // 스트리밍 시작/중지 커맨드 초기화
             ToggleStreamingCommand = new RelayCommand(ToggleStream);
+        }
+
+        [RelayCommand]
+        public Task OpenCamera()
+        {
+            var cameraSelectWindow = new CameraSelectWindow();
+
+            if (App.Current.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+            {
+                // 여기서 비동기 ShowDialog의 결과를 동기로 기다림
+                var selectedSerialTask = cameraSelectWindow.ShowDialog<string?>(desktop.MainWindow);
+                string? selectedSerial = selectedSerialTask.GetAwaiter().GetResult();  // ✅ await 없이 값 꺼내기
+
+                if (!string.IsNullOrEmpty(selectedSerial))
+                {
+                    SelectedSerialNumber = selectedSerial;
+                    StartCameraAsync();  // 기존 함수 호출
+                }
+            }
+
+            return Task.CompletedTask;
         }
 
         [RelayCommand]
