@@ -143,26 +143,29 @@ namespace AvaloniaApplication1.ViewModels
         //동작이 조금이라도 시간이 걸리는 작업이면 UI가 멈추지 않게하기위해 비동기(Task)로 만들어야 한다.
         //그래서 “캡처”처럼 실제 하드웨어를 다루거나  I/O(카메라, 파일, 네트워크) 관련 작업은 항상 Task 비동기로 처리하는 게 좋다.
         [RelayCommand]
-        public void CaputureFrame()
+        public async Task CaputureFrame()
         {
             if (!_isStreaming || CameraImage == null)
                 return;
 
             try
             {
-                // 1. 현재 카메라 이미지를 메모리 스트림에 저장
-                using var originalStream = new MemoryStream();
-                CameraImage.Save(originalStream);
+                // CameraImage를 UI 스레드에서 안전하게 복사
+                var buffer = await Dispatcher.UIThread.InvokeAsync(() =>
+                {
+                    using var ms = new MemoryStream();
+                    CameraImage.Save(ms); // UI 스레드 안전
+                    return ms.ToArray();
+                });
 
-                // 2. 스트림 내용을 byte 배열로 복사 (중요!)
-                var buffer = originalStream.ToArray();
+                // 백그라운드에서 Bitmap 생성
+                var safeCopy = await Task.Run(() =>
+                {
+                    return new Bitmap(new MemoryStream(buffer));
+                });
 
-                // 3. 복사된 스트림으로 새로운 Bitmap 생성
-                var copiedStream = new MemoryStream(buffer);
-                var captured = new Bitmap(copiedStream); // 안전하게 스트림 참조
-
-                // 4. 리스트에 저장
-                SavedImages.Add(captured);
+                // UI 스레드에서 리스트에 추가
+                SavedImages.Add(safeCopy);
             }
             catch (Exception ex)
             {
@@ -190,7 +193,7 @@ namespace AvaloniaApplication1.ViewModels
 
 
         [RelayCommand]
-        public void SaveImage()
+        public async Task SaveImage()
         {
             if (SavedImages == null || SavedImages.Count == 0)
             {
@@ -201,21 +204,25 @@ namespace AvaloniaApplication1.ViewModels
             try
             {
                 var baseFolder = Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
-        "MyCapturedImages");
+                     Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
+                     "MyCapturedImages");
 
                 var timestamp = DateTime.Now.ToString("yyyy-MM-dd_HHmmss");
                 var saveFolder = Path.Combine(baseFolder, timestamp);
                 Directory.CreateDirectory(saveFolder);
 
-                for (int i = 0; i < SavedImages.Count; i++)
-                {
-                    var image = SavedImages[i];
-                    var filePath = Path.Combine(saveFolder, $"Captured_{i + 1}.png");
 
-                    using var fs = new FileStream(filePath, FileMode.Create);
-                    image.Save(fs);
-                }
+                await Task.Run(() =>
+                {
+                    for (int i = 0; i < SavedImages.Count; i++)
+                    {
+                        var image = SavedImages[i];
+                        var filePath = Path.Combine(saveFolder, $"Captured_{i + 1}.png");
+
+                        using var fs = new FileStream(filePath, FileMode.Create);
+                        image.Save(fs);
+                    }
+                });
 
                 Console.WriteLine("이미지 저장 완료");
             }
@@ -233,7 +240,7 @@ namespace AvaloniaApplication1.ViewModels
             {
                 var mainWindow = desktop.MainWindow;
                 var dialog = new OpenFolderDialog { Title = "이미지 폴더 선택" };
-                var folder = await dialog.ShowAsync(mainWindow);
+                var folder = await dialog.ShowAsync(parent: mainWindow);
 
                 if (string.IsNullOrEmpty(folder))
                     return;
@@ -253,6 +260,7 @@ namespace AvaloniaApplication1.ViewModels
                 }
             }
         }
+
         //캡쳐 버튼 따로 -> 누르면 현재 카메라 화면 멈추고 해당 사진 옆에 리스트로 뜨게. 경로에 저장은 x ,그러고 UI는 Stream으로 변경됨.
         //Stream으로 변경된 버튼 다시 선택하면 라이브로 카메라가 변경되고 다시 UI는 capture로 변경됨.
         //save Images, Load Images 버튼따로. 
