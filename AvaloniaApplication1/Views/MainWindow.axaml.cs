@@ -2,6 +2,7 @@ using Avalonia.Controls;
 using AvaloniaApplication1.ViewModels;
 using Avalonia.Input;
 using Avalonia;
+using Avalonia.Interactivity;
 
 namespace AvaloniaApplication1.Views;
 
@@ -14,6 +15,7 @@ public partial class MainWindow : Window
         // ViewModel 연결
         DataContext = new MainWindowViewModel();
     }
+
     private void OnPointerWheelChanged(object sender, Avalonia.Input.PointerWheelEventArgs e)
     {
         var viewModel = DataContext as MainWindowViewModel;
@@ -30,4 +32,6 @@ public partial class MainWindow : Window
         // ViewModel에서 줌 로직 호출
         viewModel.OnMouseWheelZoom(e.Delta.Y);
     }
+
+    
 }

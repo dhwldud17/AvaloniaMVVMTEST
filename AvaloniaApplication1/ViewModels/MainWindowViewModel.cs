@@ -1,4 +1,5 @@
 ﻿using Avalonia;
+using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Media.Imaging;
 using Avalonia.Threading;
@@ -9,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -58,13 +60,13 @@ namespace AvaloniaApplication1.ViewModels
 
 
         [RelayCommand]
-        public Task OpenCamera()
+        public void OpenCamera() //Task뺌 
         {
             var cameraSelectWindow = new CameraSelectWindow();
 
             if (App.Current == null || App.Current.ApplicationLifetime is not IClassicDesktopStyleApplicationLifetime desktop || desktop.MainWindow == null)
             {
-                return Task.CompletedTask;
+                return;
             }
             // 팝업 닫힐 때 처리할 이벤트 연결
             cameraSelectWindow.Closed += (sender, args) =>
@@ -80,7 +82,7 @@ namespace AvaloniaApplication1.ViewModels
 
             cameraSelectWindow.Show(desktop.MainWindow);
 
-            return Task.CompletedTask;
+            return;
         }
 
         [RelayCommand] //이 메서드를 자동으로 커맨드로 만들어줌 → XAML에서 바인딩(UI와 코드 자동연결)가능하게.
@@ -143,101 +145,114 @@ namespace AvaloniaApplication1.ViewModels
         [RelayCommand]
         public void CaputureFrame()
         {
-            if (_isStreaming == false || CameraImage == null)
-            {
+            if (!_isStreaming || CameraImage == null)
                 return;
-            }
 
             try
             {
-                ////스트리밍 중지
-                //_cts?.Cancel();
-                //_isStreaming = false;
+                // 1. 현재 카메라 이미지를 메모리 스트림에 저장
+                using var originalStream = new MemoryStream();
+                CameraImage.Save(originalStream);
 
-                //현재 프레임을 메모리에 복사해서 리스트에 추가
-                using var ms = new MemoryStream();
-                CameraImage.Save(ms);
-                ms.Seek(0, SeekOrigin.Begin);
-                var captured = new Bitmap(ms);
+                // 2. 스트림 내용을 byte 배열로 복사 (중요!)
+                var buffer = originalStream.ToArray();
 
-                SavedImages.Add(captured); // 리스트에 추가
-                CameraImage = captured; // 현재 이미지를 캡처된 이미지로 변경
+                // 3. 복사된 스트림으로 새로운 Bitmap 생성
+                var copiedStream = new MemoryStream(buffer);
+                var captured = new Bitmap(copiedStream); // 안전하게 스트림 참조
+
+                // 4. 리스트에 저장
+                SavedImages.Add(captured);
             }
             catch (Exception ex)
             {
-                Console.WriteLine("CaptureFrame Error: " + ex.Message);
+                Console.WriteLine("CaptureFrame Error: " + ex);
             }
         }
 
-        [RelayCommand]
-        public void StopCamera()
-        {
-            try
-            {
-                _cts?.Cancel();
-                _camera?.StreamGrabber.Stop();
-                _camera?.Close();
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("StopCamera Error: " + ex.Message);
-            }
-        }
+        //[RelayCommand]
+        //public void StopCamera()
+        //{
+        //    try
+        //    {
+        //        _cts?.Cancel();
+        //        _camera?.StreamGrabber.Stop();
+        //        _camera?.Close();
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        Console.WriteLine("StopCamera Error: " + ex.Message);
+        //    }
+        //}
 
-        [RelayCommand]
-        public void LoadImage()
-        {
-            if (_isStreaming)
-            {
-                _cts?.Cancel();
-                _isStreaming = false;
-            }
 
-            try
-            {
-                // 이미지 파일을 열고 Bitmap으로 변환
-                var path = @"C:\Users\unieye\source\repos\AvaloniaApplication1\AvaloniaApplication1\Assets\Captured.png";
-                using var fs = new FileStream(path, FileMode.Open);
-                var loadedImage = new Bitmap(fs);
-                CameraImage?.Dispose();
-                CameraImage = loadedImage;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("이미지 로드 실패: " + ex.Message);
-            }
-        }
+        //캡쳐된 이미지 리스트들을 SaveImage()누르면 해당 리스트들이 폴더로 저장됨. 
+
 
         [RelayCommand]
         public void SaveImage()
         {
-            if (CameraImage == null)
+            if (SavedImages == null || SavedImages.Count == 0)
             {
+                Console.WriteLine("저장할 이미지가 없습니다.");
                 return;
             }
 
             try
             {
-                var path = @"C:\Users\unieye\source\repos\AvaloniaApplication1\AvaloniaApplication1\Assets\Captured.png";
-                using var fs = new FileStream(path, FileMode.Create);
-                CameraImage.Save(fs);
-                Console.WriteLine("이미지 저장 성공!");
+                var baseFolder = Path.Combine(
+        Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
+        "MyCapturedImages");
 
-                // 저장된 이미지를 리스트에 추가
-                // CameraImage를 복제해서 넣어야 한다. WriteableBitmap은 재사용되므로
-                using var ms = new MemoryStream();
-                CameraImage.Save(ms);
-                ms.Seek(0, SeekOrigin.Begin);
-                var copiedImage = new Bitmap(ms);
+                var timestamp = DateTime.Now.ToString("yyyy-MM-dd_HHmmss");
+                var saveFolder = Path.Combine(baseFolder, timestamp);
+                Directory.CreateDirectory(saveFolder);
 
-                SavedImages.Add(copiedImage);
+                for (int i = 0; i < SavedImages.Count; i++)
+                {
+                    var image = SavedImages[i];
+                    var filePath = Path.Combine(saveFolder, $"Captured_{i + 1}.png");
+
+                    using var fs = new FileStream(filePath, FileMode.Create);
+                    image.Save(fs);
+                }
+
+                Console.WriteLine("이미지 저장 완료");
             }
             catch (Exception ex)
             {
-                Console.WriteLine("이미지 저장 실패: " + ex.Message);
+                Console.WriteLine($"이미지 저장 실패: {ex.Message}");
+                return;
             }
         }
 
+        [RelayCommand]
+        public async Task LoadImageAsync()
+        {
+            if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+            {
+                var mainWindow = desktop.MainWindow;
+                var dialog = new OpenFolderDialog { Title = "이미지 폴더 선택" };
+                var folder = await dialog.ShowAsync(mainWindow);
+
+                if (string.IsNullOrEmpty(folder))
+                    return;
+
+                string[] extensions = new[] { ".jpg", ".jpeg", ".png", ".bmp" };
+                var imageFiles = Directory
+                    .EnumerateFiles(folder)
+                    .Where(f => extensions.Contains(Path.GetExtension(f).ToLower()));
+
+                SavedImages.Clear();
+
+                foreach (var file in imageFiles)
+                {
+                    using var stream = File.OpenRead(file);
+                    var bitmap = new Bitmap(stream);
+                    SavedImages.Add(bitmap);
+                }
+            }
+        }
         //캡쳐 버튼 따로 -> 누르면 현재 카메라 화면 멈추고 해당 사진 옆에 리스트로 뜨게. 경로에 저장은 x ,그러고 UI는 Stream으로 변경됨.
         //Stream으로 변경된 버튼 다시 선택하면 라이브로 카메라가 변경되고 다시 UI는 capture로 변경됨.
         //save Images, Load Images 버튼따로. 

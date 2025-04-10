@@ -14,57 +14,84 @@
 		<vm:MainWindowViewModel/>
 	</Design.DataContext>
 
-	<DockPanel LastChildFill="True">
+	<Grid Margin="10">
+		<Grid.ColumnDefinitions>
+			<ColumnDefinition Width="Auto"/>
+			<ColumnDefinition Width="*"/>
+		</Grid.ColumnDefinitions>
 
-		<!-- 상단 버튼 바 -->
-		<StackPanel Orientation="Horizontal"
-					Background="Gray"
-					DockPanel.Dock="Top"
-					HorizontalAlignment="Left"
-					Margin="10"
-					Spacing="30">
+		<!-- 왼쪽 버튼 영역 -->
+		<StackPanel Grid.Column="0"
+                    Orientation="Vertical"
+                    Background="#e0e0e0"
+                    Margin="5"
+                    Width="200"
+                    Spacing="10">
 
 			<Button Content="Open Camera"
+					Background="#d3d3d3"
+                    Foreground="Black"
+					Height="50"
 			        Command="{Binding OpenCameraCommand}"
-		           	Width="100" />
+					HorizontalAlignment="Stretch"
+					HorizontalContentAlignment="Center"
+                    VerticalContentAlignment="Center" />
+
+			<!-- Save & Load 나란히 -->
+			<Grid Height="50">
+				<Grid.ColumnDefinitions>
+					<ColumnDefinition Width="*" />
+					<ColumnDefinition Width="*" />
+				</Grid.ColumnDefinitions>
+
+				<Button Content="Save Image"
+						Background="#d3d3d3"
+						Foreground="Black"
+						Height="50"
+						Command="{Binding SaveImageCommand}"
+						Grid.Column="0"
+						HorizontalAlignment="Stretch"
+						HorizontalContentAlignment="Center"
+						VerticalContentAlignment="Center" />
+
+				<Button Content="Load Image"
+						Background="#d3d3d3"
+						Foreground="Black"
+						Height="50"
+						Command="{Binding LoadImageCommand}"
+						Grid.Column="1"
+						HorizontalAlignment="Stretch"
+						HorizontalContentAlignment="Center"
+						VerticalContentAlignment="Center" />
+
+			</Grid>
 			
 			<Button Content="Capture"
+					Background="#d3d3d3"
+					Foreground="Black"
+					Height="50"
 			        Command="{Binding CaputureFrame}"
-		           	Width="100" />
+					HorizontalAlignment="Stretch"
+					HorizontalContentAlignment="Center"
+                    VerticalContentAlignment="Center" />
 
-			<Button Content="Save Image"
-					Command="{Binding SaveImageCommand}"
-					Width="100" />
-
-			<Button Content="Load Image"
-					Command="{Binding LoadImageCommand}"
-					Width="100" />
-
-			<Button Content="Stop"
+			<!--<Button Content="Stop"
+					Background="#d3d3d3"
+					Foreground="Black"
+					Height="50"
 					Command="{Binding StopCameraCommand}"
-					Width="100" />
+					HorizontalAlignment="Stretch"
+					HorizontalContentAlignment="Center"
+                    VerticalContentAlignment="Center" />-->
 
-			<!-- Gain 조절 슬라이더 -->
-			<TextBlock Text="Gain:"
-					   VerticalAlignment="Center"
-					   Foreground="White" />
-
-			<Slider Minimum="0"
-					Maximum="100"
-					Value="{Binding GainValue, Mode=TwoWay}"
-					Width="150" />
-
-			<TextBlock Text="{Binding GainValue}"
-					   VerticalAlignment="Center"
-					   Foreground="White" />
 		</StackPanel>
 
-		<!-- 카메라 + 저장 이미지 섹션 -->
-		<Grid Margin="10">
-			<Grid.ColumnDefinitions>
-				<ColumnDefinition Width="3*"/>
-				<ColumnDefinition Width="*"/>
-			</Grid.ColumnDefinitions>
+		<!-- 오른쪽 카메라 화면 및 이미지 리스트 -->
+		<Grid Grid.Column="1" Margin="10">
+			<Grid.RowDefinitions>
+				<RowDefinition Height="3*"/>
+				<RowDefinition Height="*"/>
+			</Grid.RowDefinitions>
 
 			<!-- 카메라 영상 -->
 			<Border Grid.Column="0"
@@ -84,30 +111,30 @@
 			</Border>
 
 			<!-- 저장된 이미지 리스트 -->
-			<ScrollViewer Grid.Column="1"
-						  VerticalScrollBarVisibility="Auto"
-						  Margin="5">
+			<ScrollViewer Grid.Row="1"
+                          VerticalScrollBarVisibility="Auto"
+                          Margin="5">
 				<ItemsControl ItemsSource="{Binding SavedImages}">
 					<ItemsControl.ItemsPanel>
 						<ItemsPanelTemplate>
-							<StackPanel Orientation="Vertical"/>
+							<StackPanel Orientation="Horizontal"/>
 						</ItemsPanelTemplate>
 					</ItemsControl.ItemsPanel>
 					<ItemsControl.ItemTemplate>
 						<DataTemplate>
 							<Border Margin="5"
-									CornerRadius="4"
-									BorderBrush="#aaa"
-									BorderThickness="1">
+                                    CornerRadius="4"
+                                    BorderBrush="#aaa"
+                                    BorderThickness="1">
 								<Image Source="{Binding}"
-									   Width="120"
-									   Height="90"
-									   Stretch="UniformToFill"/>
+                                       Width="120"
+                                       Height="90"
+                                       Stretch="UniformToFill"/>
 							</Border>
 						</DataTemplate>
 					</ItemsControl.ItemTemplate>
 				</ItemsControl>
 			</ScrollViewer>
 		</Grid>
-	</DockPanel>
+	</Grid>
 </Window>
