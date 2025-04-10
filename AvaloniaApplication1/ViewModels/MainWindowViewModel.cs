@@ -1,20 +1,16 @@
-﻿using System;
+﻿using Avalonia;
+using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Media.Imaging;
+using Avalonia.Threading;
+using Basler.Pylon;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Collections.ObjectModel;
-
-using Avalonia;
-using Avalonia.Media.Imaging;
-using Avalonia.Threading;
-
-using Basler.Pylon;
-
-using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
-using System.Collections.Generic;
-using Avalonia.Controls.ApplicationLifetimes;
-using Avalonia.Controls;
 
 //https://learn.microsoft.com/ko-kr/dotnet/csharp/tour-of-csharp/strategy : C#설명서 참고하기 
 namespace AvaloniaApplication1.ViewModels
@@ -25,48 +21,64 @@ namespace AvaloniaApplication1.ViewModels
         private Camera? _camera;
         private CancellationTokenSource? _cts; // Grab 루프를 중지시키기 위한 토큰을 제공.
 
+        private const string TriggerModeOff = "Off"; // TriggerMode Off
+        private const string AcquisitionModeContinuous = "Continuous"; // 연속 촬영 모드
+
         private bool _isStreaming = true;
 
         private double _gainValue;
+
+        [ObservableProperty]
+        private double zoomLevel = 1.0;
 
         [ObservableProperty] //자동으로 CameraImage라는 public 프로퍼티와 PropertyChanged 알림을 만들어줌
         private Bitmap? cameraImage;
 
         [ObservableProperty]
-        private ObservableCollection<string> availableCameras = new();
+        private ObservableCollection<string> availableCameras = [];
 
         [ObservableProperty]
         private string? selectedSerialNumber;
 
         [ObservableProperty]
-        private ObservableCollection<Bitmap> savedImages = new();
+        private ObservableCollection<Bitmap> savedImages = [];
 
-        public MainWindowViewModel()
+        [RelayCommand]
+        public void OnMouseWheelZoom(double delta)
         {
-           
+            const double zoomFactor = 1.1;
+
+            if (delta > 0)
+                ZoomLevel *= zoomFactor;  // 줌 인
+            else
+                ZoomLevel /= zoomFactor;  // 줌 아웃
+
+            ZoomLevel = Math.Clamp(ZoomLevel, 0.5, 3.0);
         }
+
 
         [RelayCommand]
         public Task OpenCamera()
         {
             var cameraSelectWindow = new CameraSelectWindow();
 
-            if (App.Current.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+            if (App.Current == null || App.Current.ApplicationLifetime is not IClassicDesktopStyleApplicationLifetime desktop || desktop.MainWindow == null)
             {
-                // 팝업 닫힐 때 처리할 이벤트 연결
-                cameraSelectWindow.Closed += (_, _) =>
-                {
-                    var selectedSerial = cameraSelectWindow.SelectedSerial;
-
-                    if (!string.IsNullOrEmpty(selectedSerial))
-                    {
-                        SelectedSerialNumber = selectedSerial;
-                        StartCameraAsync();
-                    }
-                };
-
-                cameraSelectWindow.Show(desktop.MainWindow); 
+                return Task.CompletedTask;
             }
+            // 팝업 닫힐 때 처리할 이벤트 연결
+            cameraSelectWindow.Closed += (sender, args) =>
+            {
+                var selectedSerial = cameraSelectWindow.SelectedSerial;
+
+                if (!string.IsNullOrEmpty(selectedSerial))
+                {
+                    SelectedSerialNumber = selectedSerial;
+                    StartCameraAsync();
+                }
+            };
+
+            cameraSelectWindow.Show(desktop.MainWindow);
 
             return Task.CompletedTask;
         }
@@ -80,10 +92,10 @@ namespace AvaloniaApplication1.ViewModels
                 if (SelectedSerialNumber == null)
                 {
                     //연결된 카메라 목록 검색
-                    List<ICameraInfo> allcaeras = CameraFinder.Enumerate();
+                    List<ICameraInfo> allCameras = CameraFinder.Enumerate();
                     AvailableCameras.Clear();
 
-                    foreach (var info in allcaeras)
+                    foreach (var info in allCameras)
                     {
                         if (info.ContainsKey(CameraInfoKey.SerialNumber))
                         {
@@ -111,8 +123,8 @@ namespace AvaloniaApplication1.ViewModels
                 //_camera.Parameters[PLCamera.GainAuto].SetValue("Off");
                 //_camera.Parameters[PLCamera.Gain].SetValue(10.0);
 
-                _camera.Parameters[PLCamera.TriggerMode].SetValue("Off");
-                _camera.Parameters[PLCamera.AcquisitionMode].SetValue("Continuous");
+                _camera.Parameters[PLCamera.TriggerMode].SetValue(TriggerModeOff);
+                _camera.Parameters[PLCamera.AcquisitionMode].SetValue(AcquisitionModeContinuous);
 
                 _cts = new CancellationTokenSource();
                 _camera.StreamGrabber.Start();
@@ -175,7 +187,7 @@ namespace AvaloniaApplication1.ViewModels
         [RelayCommand]
         public void LoadImage()
         {
-            if(_isStreaming)
+            if (_isStreaming)
             {
                 _cts?.Cancel();
                 _isStreaming = false;

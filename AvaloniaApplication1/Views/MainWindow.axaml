@@ -6,6 +6,7 @@
         Title="Camera Viewer"
 		Width="800"
 		Height="600"
+		PointerWheelChanged="OnPointerWheelChanged"
 		Background="#f2f2f2">
 
 	<!--xmlns : xml namespace : 선언 시 소문자 첫글자를 사용. 의미 불명확 or 선언된 namespace와 중복되면 Camel case-->
@@ -23,11 +24,9 @@
 					Margin="10"
 					Spacing="30">
 
-
 			<Button Content="Open Camera"
 			        Command="{Binding OpenCameraCommand}"
 		           	Width="100" />
-
 			
 			<Button Content="Capture"
 			        Command="{Binding CaputureFrame}"
@@ -74,8 +73,14 @@
 					CornerRadius="8"
 					BorderBrush="#ccc"
 					BorderThickness="1">
-				<Image Source="{Binding CameraImage}"
-					   Stretch="Uniform" />
+				<Image x:Name="CameraImage"
+					   Source="{Binding CameraImage}"
+					   Stretch="Uniform"
+					   RenderTransformOrigin="0.5,0.5" >
+					<Image.RenderTransform>
+						<ScaleTransform ScaleX="{Binding ZoomLevel}" ScaleY="{Binding ZoomLevel}" />
+					</Image.RenderTransform>
+				</Image>
 			</Border>
 
 			<!-- 저장된 이미지 리스트 -->
