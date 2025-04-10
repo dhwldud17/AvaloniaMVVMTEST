@@ -29,8 +29,8 @@
 		           	Width="100" />
 
 			
-			<Button Content="{Binding ToggleButtonText}"
-			        Command="{Binding ToggleStreamCommand}"
+			<Button Content="Capture"
+			        Command="{Binding CaputureFrame}"
 		           	Width="100" />
 
 			<Button Content="Save Image"
