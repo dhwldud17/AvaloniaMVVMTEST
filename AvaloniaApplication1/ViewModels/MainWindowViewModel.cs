@@ -29,7 +29,6 @@ namespace AvaloniaApplication1.ViewModels
 
         private double _gainValue;
 
-
         [ObservableProperty] //자동으로 CameraImage라는 public 프로퍼티와 PropertyChanged 알림을 만들어줌
         private Bitmap? cameraImage;
 
@@ -42,16 +41,9 @@ namespace AvaloniaApplication1.ViewModels
         [ObservableProperty]
         private ObservableCollection<Bitmap> savedImages = new();
 
-        [ObservableProperty]
-        private string toggleButtonText = "Capture"; // 버튼 텍스트 초기값
-
-        [ObservableProperty]
-        private IRelayCommand toggleStreamingCommand; // 스트리밍 시작/중지 커맨드
-
         public MainWindowViewModel()
         {
-            // 스트리밍 시작/중지 커맨드 초기화
-            ToggleStreamingCommand = new RelayCommand(ToggleStream);
+           
         }
 
         [RelayCommand]
@@ -73,33 +65,11 @@ namespace AvaloniaApplication1.ViewModels
                     }
                 };
 
-                cameraSelectWindow.Show(desktop.MainWindow); // 여기 주목!! ShowDialog → Show
+                cameraSelectWindow.Show(desktop.MainWindow); 
             }
 
             return Task.CompletedTask;
         }
-
-
-        [RelayCommand]
-        private void ToggleStream()
-        {
-            if (_isStreaming)
-            {
-                //현재는 스트리밍 중이므로 스트리밍을 중지 -> 캡쳐 실행
-                CaputureFrame();
-                ToggleButtonText = "Streaming"; // 버튼 텍스트 변경  
-            }
-            else
-            {
-                //정지 상태 -> 다시 스트리밍 시작
-                ResumeStreaming();
-                ToggleButtonText = "Capture"; // 버튼 텍스트 변경
-            }
-
-            _isStreaming = !_isStreaming; // 스트리밍 상태 토글
-        }
-
-        
 
         [RelayCommand] //이 메서드를 자동으로 커맨드로 만들어줌 → XAML에서 바인딩(UI와 코드 자동연결)가능하게.
         public Task StartCameraAsync()
@@ -119,8 +89,6 @@ namespace AvaloniaApplication1.ViewModels
                         {
                             //카메라 시리얼넘버를 리스트에 추가
                             AvailableCameras.Add(info[CameraInfoKey.SerialNumber]);
-
-
                         }
                     }
 
@@ -170,9 +138,9 @@ namespace AvaloniaApplication1.ViewModels
 
             try
             {
-                //스트리밍 중지
-                _cts?.Cancel();
-                _isStreaming = false;
+                ////스트리밍 중지
+                //_cts?.Cancel();
+                //_isStreaming = false;
 
                 //현재 프레임을 메모리에 복사해서 리스트에 추가
                 using var ms = new MemoryStream();
@@ -186,27 +154,6 @@ namespace AvaloniaApplication1.ViewModels
             catch (Exception ex)
             {
                 Console.WriteLine("CaptureFrame Error: " + ex.Message);
-            }
-        }
-
-        [RelayCommand]
-        public void ResumeStreaming()
-        {
-            if (_isStreaming)
-            {
-                return; // 이미 스트리밍 중이면 아무것도 하지 않음
-            }
-
-            try
-            {
-                // 스트리밍 재개
-                _cts = new CancellationTokenSource();
-                Task.Run(() => GrabLoop(_cts.Token));
-                _isStreaming = true;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("ResumeStreaming Error: " + ex.Message);
             }
         }
 
@@ -228,6 +175,12 @@ namespace AvaloniaApplication1.ViewModels
         [RelayCommand]
         public void LoadImage()
         {
+            if(_isStreaming)
+            {
+                _cts?.Cancel();
+                _isStreaming = false;
+            }
+
             try
             {
                 // 이미지 파일을 열고 Bitmap으로 변환
