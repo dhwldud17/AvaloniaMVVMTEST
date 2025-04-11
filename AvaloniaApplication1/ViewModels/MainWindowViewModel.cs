@@ -1,4 +1,11 @@
-﻿using Avalonia;
+﻿using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.IO;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Media.Imaging;
@@ -6,15 +13,7 @@ using Avalonia.Threading;
 using Basler.Pylon;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.IO;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 
-//https://learn.microsoft.com/ko-kr/dotnet/csharp/tour-of-csharp/strategy : C#설명서 참고하기 
 namespace AvaloniaApplication1.ViewModels
 {
     public partial class MainWindowViewModel : ObservableObject
@@ -51,13 +50,14 @@ namespace AvaloniaApplication1.ViewModels
             const double zoomFactor = 1.1;
 
             if (delta > 0)
+            { 
                 ZoomLevel *= zoomFactor;  // 줌 인
-            else
+                }
+            else 
                 ZoomLevel /= zoomFactor;  // 줌 아웃
 
             ZoomLevel = Math.Clamp(ZoomLevel, 0.5, 3.0);
         }
-
 
         [RelayCommand]
         public void OpenCamera() //Task뺌 
@@ -137,11 +137,9 @@ namespace AvaloniaApplication1.ViewModels
                 Console.WriteLine("StartCamera Error: " + ex.Message);
             }
 
-            return Task.CompletedTask; // RelayCommand가 Task 반환형이므로 빈 Task 반환
+            return Task.CompletedTask;
         }
 
-        //동작이 조금이라도 시간이 걸리는 작업이면 UI가 멈추지 않게하기위해 비동기(Task)로 만들어야 한다.
-        //그래서 “캡처”처럼 실제 하드웨어를 다루거나  I/O(카메라, 파일, 네트워크) 관련 작업은 항상 Task 비동기로 처리하는 게 좋다.
         [RelayCommand]
         public async Task CaputureFrame()
         {
@@ -154,7 +152,7 @@ namespace AvaloniaApplication1.ViewModels
                 var buffer = await Dispatcher.UIThread.InvokeAsync(() =>
                 {
                     using var ms = new MemoryStream();
-                    CameraImage.Save(ms); // UI 스레드 안전
+                    CameraImage.Save(ms); 
                     return ms.ToArray();
                 });
 
@@ -191,7 +189,6 @@ namespace AvaloniaApplication1.ViewModels
 
         //캡쳐된 이미지 리스트들을 SaveImage()누르면 해당 리스트들이 폴더로 저장됨. 
 
-
         [RelayCommand]
         public async Task SaveImage()
         {
@@ -210,7 +207,6 @@ namespace AvaloniaApplication1.ViewModels
                 var timestamp = DateTime.Now.ToString("yyyy-MM-dd_HHmmss");
                 var saveFolder = Path.Combine(baseFolder, timestamp);
                 Directory.CreateDirectory(saveFolder);
-
 
                 await Task.Run(() =>
                 {

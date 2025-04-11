@@ -6,15 +6,31 @@
         x:Class="AvaloniaApplication1.CameraSelectWindow"
         Title="OpenCameraForm"
 		Width = "300"
-        Height = "160"
-		WindowStartupLocation="CenterOwner">
+        Height = "130"
+		WindowStartupLocation="CenterOwner"
+		Background="#f2f2f2">
 	
 	<StackPanel Margin="10" 
-				Spacing="10">
-		<ComboBox x:Name="CameraComboBox" />
+				Spacing="15">
+		
+		<StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+			<TextBlock Text="Serial No."
+                       VerticalAlignment="Center"
+                       Width="70"
+					   Foreground="Black"/>
+			<ComboBox x:Name="CameraComboBox"
+                      Width="180"
+                      HorizontalAlignment="Left"/>
+		</StackPanel>
 		
 		<Button Content="OK" 
-				Click="OnSelectClicked"/>
+				Click="OnSelectClicked"
+				Height="50"
+				Background="#d3d3d3"
+				Foreground="Black"
+				HorizontalAlignment="Stretch"
+				HorizontalContentAlignment="Center"
+				VerticalContentAlignment="Center"/>
 		
 	</StackPanel>
 	
