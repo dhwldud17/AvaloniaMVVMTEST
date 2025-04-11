@@ -261,27 +261,19 @@ namespace AvaloniaApplication1.ViewModels
             }
         }
 
-        //캡쳐 버튼 따로 -> 누르면 현재 카메라 화면 멈추고 해당 사진 옆에 리스트로 뜨게. 경로에 저장은 x ,그러고 UI는 Stream으로 변경됨.
-        //Stream으로 변경된 버튼 다시 선택하면 라이브로 카메라가 변경되고 다시 UI는 capture로 변경됨.
-        //save Images, Load Images 버튼따로. 
-        //카메라 화면 줌인 아웃 기능 추가
-
-
-        //속성 ->값이 변함
-        // XAML은 함수 호출은 못 하고 오직 속성(Property) 에만 바인딩할 수 있다.
-        public double GainValue
-        {
-            get => _gainValue;
-            set
-            {
-                if (_gainValue != value)
-                {
-                    _gainValue = value;
-                    OnPropertyChanged(nameof(GainValue));
-                    SetCameraGain(_gainValue);
-                }
-            }
-        }
+        //public double GainValue
+        //{
+        //    get => _gainValue;
+        //    set
+        //    {
+        //        if (_gainValue != value)
+        //        {
+        //            _gainValue = value;
+        //            OnPropertyChanged(nameof(GainValue));
+        //            SetCameraGain(_gainValue);
+        //        }
+        //    }
+        //}
 
         private void GrabLoop(CancellationToken token)
         {
@@ -333,28 +325,28 @@ namespace AvaloniaApplication1.ViewModels
             }
         }
 
-        // 실제 카메라 Gain 설정 함수
-        private void SetCameraGain(double gain)
-        {
-            try
-            {
-                // Basler 카메라에서 Gain 설정
-                if (_camera != null && _camera.Parameters[PLCamera.Gain].IsWritable)//IsWritable이 false?
-                {
-                    // Gain 범위를 안전하게 설정
-                    double minGain = _camera.Parameters[PLCamera.Gain].GetMinimum();
-                    double maxGain = _camera.Parameters[PLCamera.Gain].GetMaximum();
+        //// 실제 카메라 Gain 설정 함수
+        //private void SetCameraGain(double gain)
+        //{
+        //    try
+        //    {
+        //        // Basler 카메라에서 Gain 설정
+        //        if (_camera != null && _camera.Parameters[PLCamera.Gain].IsWritable)//IsWritable이 false?
+        //        {
+        //            // Gain 범위를 안전하게 설정
+        //            double minGain = _camera.Parameters[PLCamera.Gain].GetMinimum();
+        //            double maxGain = _camera.Parameters[PLCamera.Gain].GetMaximum();
 
-                    double clampedGain = Math.Clamp(gain, minGain, maxGain);
-                    _camera.Parameters[PLCamera.Gain].SetValue(clampedGain);
-                    Console.WriteLine($"Gain 설정됨: {clampedGain}");
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Gain 설정 실패: " + ex.Message);
-            }
-        }
+        //            double clampedGain = Math.Clamp(gain, minGain, maxGain);
+        //            _camera.Parameters[PLCamera.Gain].SetValue(clampedGain);
+        //            Console.WriteLine($"Gain 설정됨: {clampedGain}");
+        //        }
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        Console.WriteLine("Gain 설정 실패: " + ex.Message);
+        //    }
+        //}
     }
 
 }
