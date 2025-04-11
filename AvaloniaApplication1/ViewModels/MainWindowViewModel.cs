@@ -150,7 +150,7 @@ namespace AvaloniaApplication1.ViewModels
 
             try
             {
-                // CameraImage를 UI 스레드에서 안전하게 복사
+                // 그냥 task걸면 UI쓰레드 충돌(?) 오류나서 분리시킴 근데그래도 UI 멈춤
                 var buffer = await Dispatcher.UIThread.InvokeAsync(() =>
                 {
                     using var ms = new MemoryStream();
@@ -239,6 +239,10 @@ namespace AvaloniaApplication1.ViewModels
             if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
             {
                 var mainWindow = desktop.MainWindow;
+
+                if (mainWindow == null)
+                    return; 
+
                 var dialog = new OpenFolderDialog { Title = "이미지 폴더 선택" };
                 var folder = await dialog.ShowAsync(parent: mainWindow);
 
