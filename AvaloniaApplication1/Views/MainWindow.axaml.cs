@@ -3,17 +3,18 @@ using AvaloniaApplication1.ViewModels;
 using Avalonia.Input;
 using Avalonia;
 using Avalonia.Interactivity;
+using Autofac;
 
 namespace AvaloniaApplication1.Views;
 
 public partial class MainWindow : Window  
 {
-    public MainWindow()
+    public MainWindow(MainWindowViewModel viewModel)
     {
         InitializeComponent();
 
         // ViewModel 연결
-        DataContext = new MainWindowViewModel();
+        DataContext = viewModel; // ViewModel을 DataContext로 설정
     }
 
     private void OnPointerWheelChanged(object sender, Avalonia.Input.PointerWheelEventArgs e)

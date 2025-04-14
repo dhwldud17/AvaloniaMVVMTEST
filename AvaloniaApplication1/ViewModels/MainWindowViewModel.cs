@@ -13,6 +13,8 @@ using Avalonia.Threading;
 using Basler.Pylon;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Autofac;
+using Autofac.Core;
 
 namespace AvaloniaApplication1.ViewModels
 {
@@ -21,6 +23,8 @@ namespace AvaloniaApplication1.ViewModels
         //ObservableObject: MVVM 패턴에서 바인딩 속성에 대해 자동으로 INotifyPropertyChanged 구현
         private Camera? _camera;
         private CancellationTokenSource? _cts; // Grab 루프를 중지시키기 위한 토큰을 제공.
+
+        private readonly ILifetimeScope _scope; // Autofac의 스코프를 사용하여 DI를 관리하기 위한 필드
 
         private const string TriggerModeOff = "Off"; // TriggerMode Off
         private const string AcquisitionModeContinuous = "Continuous"; // 연속 촬영 모드
@@ -44,16 +48,22 @@ namespace AvaloniaApplication1.ViewModels
         [ObservableProperty]
         private ObservableCollection<Bitmap> savedImages = [];
 
+        //생성자에서 의존성주입
+        public MainWindowViewModel(ILifetimeScope scope)
+        {
+            _scope = scope;
+        }
+
         [RelayCommand]
         public void OnMouseWheelZoom(double delta)
         {
             const double zoomFactor = 1.1;
 
             if (delta > 0)
-            { 
+            {
                 ZoomLevel *= zoomFactor;  // 줌 인
-                }
-            else 
+            }
+            else
                 ZoomLevel /= zoomFactor;  // 줌 아웃
 
             ZoomLevel = Math.Clamp(ZoomLevel, 0.5, 3.0);
@@ -118,7 +128,8 @@ namespace AvaloniaApplication1.ViewModels
                     return Task.CompletedTask; // RelayCommand가 Task 반환형이므로 빈 Task 반환
                 }
 
-                _camera = new Camera(SelectedSerialNumber);
+                //_camera = new Camera(SelectedSerialNumber);
+                _camera = _scope.Resolve<Camera>(new NamedParameter("serial", SelectedSerialNumber));
                 _camera.Open();
 
                 //파라미터설정
@@ -128,7 +139,8 @@ namespace AvaloniaApplication1.ViewModels
                 _camera.Parameters[PLCamera.TriggerMode].SetValue(TriggerModeOff);
                 _camera.Parameters[PLCamera.AcquisitionMode].SetValue(AcquisitionModeContinuous);
 
-                _cts = new CancellationTokenSource();
+                // _cts = new CancellationTokenSource();
+                _cts = _scope.Resolve<CancellationTokenSource>();
                 _camera.StreamGrabber.Start();
                 Task.Run(() => GrabLoop(_cts.Token));  //무한 루프 함수를 백그라운드 스레드에서 실행
             }
@@ -152,7 +164,7 @@ namespace AvaloniaApplication1.ViewModels
                 var buffer = await Dispatcher.UIThread.InvokeAsync(() =>
                 {
                     using var ms = new MemoryStream();
-                    CameraImage.Save(ms); 
+                    CameraImage.Save(ms);
                     return ms.ToArray();
                 });
 
@@ -237,7 +249,7 @@ namespace AvaloniaApplication1.ViewModels
                 var mainWindow = desktop.MainWindow;
 
                 if (mainWindow == null)
-                    return; 
+                    return;
 
                 var dialog = new OpenFolderDialog { Title = "이미지 폴더 선택" };
                 var folder = await dialog.ShowAsync(parent: mainWindow);
