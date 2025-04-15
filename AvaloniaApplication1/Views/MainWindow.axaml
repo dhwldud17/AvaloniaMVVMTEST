@@ -70,7 +70,7 @@
 					Background="#d3d3d3"
 					Foreground="Black"
 					Height="50"
-			        Command="{Binding CaputureFrame}"
+			        Command="{Binding CaptureFrame}"
 					HorizontalAlignment="Stretch"
 					HorizontalContentAlignment="Center"
                     VerticalContentAlignment="Center" />
@@ -118,7 +118,7 @@
 					<ItemsControl.ItemsPanel>
 						<ItemsPanelTemplate>
 							<StackPanel Orientation="Vertical"/>
-						</ItemsPanelTemplate>
+						</ItemsPanelTemplate>  
 					</ItemsControl.ItemsPanel>
 					<ItemsControl.ItemTemplate>
 						<DataTemplate>

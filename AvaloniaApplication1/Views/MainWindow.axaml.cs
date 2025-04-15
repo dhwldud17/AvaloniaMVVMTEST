@@ -4,6 +4,7 @@ using Avalonia.Input;
 using Avalonia;
 using Avalonia.Interactivity;
 using Autofac;
+using AvaloniaApplication1.Services;
 
 namespace AvaloniaApplication1.Views;
 
@@ -19,7 +20,7 @@ public partial class MainWindow : Window
 
     private void OnPointerWheelChanged(object sender, Avalonia.Input.PointerWheelEventArgs e)
     {
-        var viewModel = DataContext as MainWindowViewModel;
+        var viewModel = DataContext as ImageManager;
         if (viewModel == null) return;
 
         // 마우스가 위치한 상대 좌표 (ZoomTarget 기준)
